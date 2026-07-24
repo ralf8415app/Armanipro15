@@ -1,16 +1,15 @@
 {
-  "name": "Chanel & Armani – Pro 18 Direktfix V4",
-  "short_name": "Chanel & Armani",
-  "description": "iPhone Home-App ohne Service-Worker-Cache.",
-  "start_url": "./index.html?homeapp=v4",
-  "scope": "./",
-  "display": "standalone",
-  "orientation": "landscape",
-  "background_color": "#08101d",
-  "theme_color": "#101827",
-  "icons": [
+  "name":"Chanel & Armani – Neubau",
+  "short_name":"C & A",
+  "id":"./?rebuild=1",
+  "start_url":"./?rebuild=1",
+  "scope":"./",
+  "display":"standalone",
+  "orientation":"landscape",
+  "background_color":"#071426",
+  "theme_color":"#0d2344",
+  "icons":[
     {"src":"icon-192.png","sizes":"192x192","type":"image/png"},
     {"src":"icon-512.png","sizes":"512x512","type":"image/png"}
-  ],
-  "id": "chanel-armani-pro18-direct-v4"
+  ]
 }
