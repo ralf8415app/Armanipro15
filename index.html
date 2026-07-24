@@ -1,4 +1,4 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#101827"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="manifest.webmanifest?v=homeapp3"><meta name="apple-mobile-web-app-title" content="Chanel & Armani"><meta name="format-detection" content="telephone=no"><meta name="mobile-web-app-capable" content="yes"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><title>Chanel & Armani – Pro 18 Fehlerkorrektur</title>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#101827"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="manifest.webmanifest?v=homeapp4"><meta name="apple-mobile-web-app-title" content="Chanel & Armani"><meta name="format-detection" content="telephone=no"><meta name="mobile-web-app-capable" content="yes"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><title>Chanel & Armani – Pro 18 Home-App Direktfix V4</title>
 <style>
 *{box-sizing:border-box;-webkit-user-select:none;user-select:none}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08101d;font-family:Arial}canvas{display:block}#game{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
 .screen{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:8px;background:linear-gradient(#61c5ffed,#6bd06bed)}.screen.show{display:flex}.card{width:min(96vw,920px);max-height:94vh;overflow:auto;background:#f4ead7;border:5px solid #362b23;border-radius:22px;padding:14px;text-align:center;box-shadow:0 18px 55px #0008}h1{margin:0;font-size:clamp(30px,6vw,62px);text-shadow:3px 3px #fff}h2,h3{margin:5px}.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:8px}button,input{font:inherit}button{border:4px solid #362b23;border-radius:14px;padding:10px 14px;font-weight:900;font-size:16px;background:#f3c34e;box-shadow:0 5px #8b6515}.char{min-width:145px;background:#eee6da}.char.selected{outline:6px solid #22c55e}.preview{width:100px;height:78px;border:3px solid #362b23;border-radius:10px;background:#9bdcff}.sticky{position:sticky;bottom:0;width:min(320px,90%)}
@@ -1202,7 +1202,7 @@ function sdraw(){
 function leaveShadow(){if(st)clearInterval(st);K.l=K.r=K.j=K.f=0;document.body.classList.remove('bonus');show('');useMainGameControls(true);build(4);state='game';run=1;last=performance.now()}
 $('sSkip').onclick=leaveShadow;
 
-if('serviceWorker' in navigator){window.addEventListener('load',async()=>{try{const reg=await navigator.serviceWorker.register('./sw.js?v=homeapp3',{scope:'./'});await reg.update();}catch(err){console.error('Service Worker',err)}});}
+/* Home-App V4: Service Worker intentionally disabled to prevent stale iOS caches. */
 </script>
 <script>
 (function(){
@@ -1958,48 +1958,104 @@ addEventListener('keydown',e=>{if(state!=='space')return;const m={ArrowLeft:'l',
 })();
 </script>
 
+
+
+<style>
+html,body{overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+#over{touch-action:manipulation!important}
+#retry,#home{-webkit-appearance:none;appearance:none;touch-action:manipulation!important}
+</style>
 <script>
 (function(){
   'use strict';
-  const BUILD='pro18-homeapp-v3';
-  const standalone=window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
-  document.documentElement.classList.toggle('standalone-app',standalone);
+  const VERSION='pro18-homeapp-direct-v4';
+  const params=new URLSearchParams(location.search);
 
-  async function refreshOldInstallation(){
-    if(!('caches' in window) || !('serviceWorker' in navigator)) return;
-    const previous=localStorage.getItem('caHomeBuild');
-    if(previous===BUILD) return;
-    localStorage.setItem('caHomeBuild',BUILD);
+  // iOS Home-App: remove every older service worker and cache. This version runs directly.
+  async function removeOldOfflineLayer(){
     try{
-      const keys=await caches.keys();
-      await Promise.all(keys.filter(k=>k!=='chanel-armani-pro18-homeapp-v3').map(k=>caches.delete(k)));
-      const reg=await navigator.serviceWorker.register('./sw.js?v=homeapp3',{scope:'./'});
-      await reg.update();
-    }catch(err){console.error('Home-App-Aktualisierung',err)}
+      if('serviceWorker' in navigator){
+        const regs=await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r=>r.unregister()));
+      }
+      if('caches' in window){
+        const names=await caches.keys();
+        await Promise.all(names.map(n=>caches.delete(n)));
+      }
+    }catch(e){console.warn('Cache cleanup',e)}
+  }
+  removeOldOfflineLayer();
+
+  function hardOpen(mode){
+    try{
+      sessionStorage.setItem('caLaunchMode',mode);
+      sessionStorage.setItem('caLastLevel',String((typeof lastLevel!=='undefined'&&lastLevel)||1));
+      sessionStorage.setItem('caMode',(typeof mode!=='undefined'&&window.mode)||'solo');
+      sessionStorage.setItem('caP1',(window.choose&&choose[1])||'armani');
+    }catch(_){ }
+    const base=location.pathname.replace(/[^/]*$/,'index.html');
+    location.replace(base+'?v='+Date.now()+'&launch='+encodeURIComponent(mode));
   }
 
-  function recoverFromIOSSnapshot(event){
-    if(!standalone) return;
-    try{K.l=K.r=K.j=K.f=0}catch(_){ }
-    if(event && event.persisted){
-      location.reload();
+  function installHardButtons(){
+    const retry=document.getElementById('retry');
+    const home=document.getElementById('home');
+    const bind=(node,mode)=>{
+      if(!node)return;
+      const fn=e=>{if(e){e.preventDefault();e.stopImmediatePropagation()} hardOpen(mode)};
+      node.onclick=fn;
+      node.ontouchstart=fn;
+      node.onpointerdown=fn;
+    };
+    bind(retry,'retry');
+    bind(home,'home');
+  }
+
+  // Capturing fallback works even if another overlay intercepts the event.
+  document.addEventListener('pointerdown',e=>{
+    const b=e.target&&e.target.closest&&e.target.closest('#retry,#home');
+    if(!b)return;
+    e.preventDefault();e.stopImmediatePropagation();
+    hardOpen(b.id==='retry'?'retry':'home');
+  },true);
+  document.addEventListener('touchstart',e=>{
+    const b=e.target&&e.target.closest&&e.target.closest('#retry,#home');
+    if(!b)return;
+    e.preventDefault();e.stopImmediatePropagation();
+    hardOpen(b.id==='retry'?'retry':'home');
+  },{capture:true,passive:false});
+
+  function launchClean(){
+    installHardButtons();
+    const launch=params.get('launch')||sessionStorage.getItem('caLaunchMode');
+    try{sessionStorage.removeItem('caLaunchMode')}catch(_){ }
+    if(launch==='home'){
+      try{run=0;state='menu';document.body.classList.remove('playing','bonus','coop-active');show('menu')}catch(_){ }
       return;
     }
-    // A cold Home-screen launch must not reopen an old loser/bonus overlay.
-    try{
-      if(document.visibilityState==='visible' && (state==='over' || state==='space')){
-        run=0; state='menu';
-        document.body.classList.remove('playing','bonus','coop-active');
-        show('menu');
-        const hud=document.getElementById('hud'),move=document.getElementById('move'),act=document.getElementById('act');
-        if(hud)hud.style.display='none'; if(move)move.style.display='none'; if(act)act.style.display='none';
-      }
-    }catch(_){ }
+    if(launch==='retry'){
+      setTimeout(()=>{
+        try{
+          const lv=Math.max(1,Math.min(4,Number(sessionStorage.getItem('caLastLevel'))||1));
+          if(window.choose) choose[1]=sessionStorage.getItem('caP1')||choose[1]||'armani';
+          window.mode='solo';
+          gameFinished=false;
+          show('');
+          document.body.classList.add('playing');
+          document.body.classList.remove('bonus');
+          useMainGameControls(true);
+          P=[mkP(1,choose[1],70)];
+          build(lv);
+          state='game';run=1;last=performance.now();
+        }catch(err){
+          console.error('Clean retry failed',err);
+          try{run=0;state='menu';show('menu')}catch(_){ }
+        }
+      },120);
+    }
   }
-
-  window.addEventListener('pageshow',recoverFromIOSSnapshot);
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')recoverFromIOSSnapshot()});
-  refreshOldInstallation();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',launchClean,{once:true}); else launchClean();
+  window.addEventListener('pageshow',()=>{installHardButtons(); if(document.visibilityState==='visible') removeOldOfflineLayer()});
 })();
 </script>
 </body></html>
