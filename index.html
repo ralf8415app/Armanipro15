@@ -1,4 +1,4 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#101827"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><title>Chanel & Armani – Pro 15 Testlevel</title>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#101827"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="manifest" href="manifest.webmanifest?v=homeapp3"><meta name="apple-mobile-web-app-title" content="Chanel & Armani"><meta name="format-detection" content="telephone=no"><meta name="mobile-web-app-capable" content="yes"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><title>Chanel & Armani – Pro 18 Fehlerkorrektur</title>
 <style>
 *{box-sizing:border-box;-webkit-user-select:none;user-select:none}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#08101d;font-family:Arial}canvas{display:block}#game{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
 .screen{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:8px;background:linear-gradient(#61c5ffed,#6bd06bed)}.screen.show{display:flex}.card{width:min(96vw,920px);max-height:94vh;overflow:auto;background:#f4ead7;border:5px solid #362b23;border-radius:22px;padding:14px;text-align:center;box-shadow:0 18px 55px #0008}h1{margin:0;font-size:clamp(30px,6vw,62px);text-shadow:3px 3px #fff}h2,h3{margin:5px}.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:8px}button,input{font:inherit}button{border:4px solid #362b23;border-radius:14px;padding:10px 14px;font-weight:900;font-size:16px;background:#f3c34e;box-shadow:0 5px #8b6515}.char{min-width:145px;background:#eee6da}.char.selected{outline:6px solid #22c55e}.preview{width:100px;height:78px;border:3px solid #362b23;border-radius:10px;background:#9bdcff}.sticky{position:sticky;bottom:0;width:min(320px,90%)}
@@ -1202,7 +1202,7 @@ function sdraw(){
 function leaveShadow(){if(st)clearInterval(st);K.l=K.r=K.j=K.f=0;document.body.classList.remove('bonus');show('');useMainGameControls(true);build(4);state='game';run=1;last=performance.now()}
 $('sSkip').onclick=leaveShadow;
 
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+if('serviceWorker' in navigator){window.addEventListener('load',async()=>{try{const reg=await navigator.serviceWorker.register('./sw.js?v=homeapp3',{scope:'./'});await reg.update();}catch(err){console.error('Service Worker',err)}});}
 </script>
 <script>
 (function(){
@@ -1246,7 +1246,7 @@ if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.se
   if('serviceWorker' in navigator){
     navigator.serviceWorker.ready.then(async reg=>{
       try{
-        const cache = await caches.open('chanel-armani-offline-v13');
+        const cache = await caches.open('chanel-armani-pro18-homeapp-v3');
         const ok = await cache.match('./index.html');
         showMessage(ok ? 'Offline bereit. Auf iPhone/iPad über „Zum Home-Bildschirm“ installieren.' : 'Offline-Dateien werden vorbereitet …', false);
         if(ok) setTimeout(()=>banner.style.display='none',4500);
@@ -1892,4 +1892,114 @@ addEventListener('keydown',e=>{if(state!=='space')return;const m={ArrowLeft:'l',
 })();
 </script>
 
+
+<style>
+#over{z-index:9999!important;pointer-events:auto!important}
+#over .card,#over button{pointer-events:auto!important;touch-action:manipulation!important}
+#over button{position:relative;z-index:10000;min-height:64px}
+</style>
+<script>
+(function(){
+  'use strict';
+  function el(id){return document.getElementById(id)}
+  function clearGameInput(){
+    try{K.l=K.r=K.j=K.f=0}catch(_){ }
+    try{document.querySelectorAll('.pressed').forEach(x=>x.classList.remove('pressed'))}catch(_){ }
+  }
+  function restartLastLevelFixed(ev){
+    if(ev){ev.preventDefault();ev.stopPropagation()}
+    clearGameInput();
+    try{cancelAnimationFrame(bossRAF)}catch(_){ }
+    try{bossFightActive=false}catch(_){ }
+    try{gameFinished=false;victoryPending=false;bossArena=false}catch(_){ }
+    const target=(Number.isFinite(Number(lastLevel))&&Number(lastLevel)>=1&&Number(lastLevel)<=4)?Number(lastLevel):1;
+    try{
+      show('');
+      document.body.classList.add('playing');
+      document.body.classList.remove('bonus');
+      useMainGameControls(true);
+      score=Math.max(0,Number(score)||0);
+      P=[mkP(1,choose[1]||'armani',70)];
+      if(mode==='coop')P.push(mkP(2,choose[2]||'chanel',140));
+      build(target);
+      state='game';run=1;last=performance.now();
+      if(el('hud'))el('hud').style.display='flex';
+      if(el('move'))el('move').style.display='flex';
+      if(el('act'))el('act').style.display='flex';
+    }catch(err){
+      console.error('Neustart fehlgeschlagen',err);
+      location.reload();
+    }
+  }
+  function goHomeFixed(ev){
+    if(ev){ev.preventDefault();ev.stopPropagation()}
+    clearGameInput();
+    try{cancelAnimationFrame(bossRAF)}catch(_){ }
+    try{bossFightActive=false;gameFinished=false;run=0;state='menu'}catch(_){ }
+    document.body.classList.remove('playing','bonus','coop-active');
+    try{show('menu')}catch(_){location.reload()}
+    if(el('hud'))el('hud').style.display='none';
+    if(el('move'))el('move').style.display='none';
+    if(el('act'))el('act').style.display='none';
+  }
+  function bindSafeButton(node,fn){
+    if(!node)return;
+    node.onclick=fn;
+    node.addEventListener('pointerup',fn,{passive:false});
+    node.addEventListener('touchend',fn,{passive:false});
+  }
+  bindSafeButton(el('retry'),restartLastLevelFixed);
+  bindSafeButton(el('home'),goHomeFixed);
+  // iOS/PWA: remove a possibly frozen overlay after page restoration.
+  window.addEventListener('pageshow',function(e){
+    clearGameInput();
+    if(e.persisted && state==='game')show('');
+  });
+})();
+</script>
+
+<script>
+(function(){
+  'use strict';
+  const BUILD='pro18-homeapp-v3';
+  const standalone=window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+  document.documentElement.classList.toggle('standalone-app',standalone);
+
+  async function refreshOldInstallation(){
+    if(!('caches' in window) || !('serviceWorker' in navigator)) return;
+    const previous=localStorage.getItem('caHomeBuild');
+    if(previous===BUILD) return;
+    localStorage.setItem('caHomeBuild',BUILD);
+    try{
+      const keys=await caches.keys();
+      await Promise.all(keys.filter(k=>k!=='chanel-armani-pro18-homeapp-v3').map(k=>caches.delete(k)));
+      const reg=await navigator.serviceWorker.register('./sw.js?v=homeapp3',{scope:'./'});
+      await reg.update();
+    }catch(err){console.error('Home-App-Aktualisierung',err)}
+  }
+
+  function recoverFromIOSSnapshot(event){
+    if(!standalone) return;
+    try{K.l=K.r=K.j=K.f=0}catch(_){ }
+    if(event && event.persisted){
+      location.reload();
+      return;
+    }
+    // A cold Home-screen launch must not reopen an old loser/bonus overlay.
+    try{
+      if(document.visibilityState==='visible' && (state==='over' || state==='space')){
+        run=0; state='menu';
+        document.body.classList.remove('playing','bonus','coop-active');
+        show('menu');
+        const hud=document.getElementById('hud'),move=document.getElementById('move'),act=document.getElementById('act');
+        if(hud)hud.style.display='none'; if(move)move.style.display='none'; if(act)act.style.display='none';
+      }
+    }catch(_){ }
+  }
+
+  window.addEventListener('pageshow',recoverFromIOSSnapshot);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')recoverFromIOSSnapshot()});
+  refreshOldInstallation();
+})();
+</script>
 </body></html>

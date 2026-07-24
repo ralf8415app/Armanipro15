@@ -1,8 +1,8 @@
 {
-  "name": "Chanel & Armani – Bonus und Boss V16",
+  "name": "Chanel & Armani – Pro 18 Home-App Fix",
   "short_name": "Chanel & Armani",
-  "description": "Neu gebaute Bonusspiele und Bosskampf mit eigener, zuverlässig sichtbarer Touch-Steuerung.",
-  "start_url": "./index.html?source=pwa",
+  "description": "iPhone-Home-App-kompatible Testversion mit sicherem Offline-Start.",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "landscape",
@@ -28,5 +28,6 @@
   "categories": [
     "games",
     "entertainment"
-  ]
+  ],
+  "id": "./"
 }
